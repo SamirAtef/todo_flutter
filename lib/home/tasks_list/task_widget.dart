@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:todo/database/my_database.dart';
+import 'package:todo/database/task.dart';
+import 'package:todo/dialogeUtils.dart';
 import 'package:todo/my_theme_data.dart';
 
 class TaskWidget extends StatelessWidget {
+  Task task;
+
+  TaskWidget(this.task);
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -12,7 +19,21 @@ class TaskWidget extends StatelessWidget {
           motion: DrawerMotion(),
           children: [
             SlidableAction(
-              onPressed: (_) {},
+              onPressed: (_) {
+                MyDatabase.deleteTask(task).then((value) {
+                  showMessage(context, 'Task deleted successfully',
+                      posActionName: 'ok');
+                }).onError((error, stackTrace) {
+                  showMessage(
+                      context,
+                      'something went wrong,'
+                      'please try again later',
+                      posActionName: 'ok');
+                }).timeout(Duration(seconds: 5), onTimeout: () {
+                  showMessage(context, 'Data deleted locally ',
+                      posActionName: 'ok');
+                });
+              },
               icon: Icons.delete,
               backgroundColor: MyTheme.red,
               label: 'Delete',
@@ -46,7 +67,7 @@ class TaskWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'this is title',
+                      task.title ?? "",
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     SizedBox(
@@ -54,9 +75,9 @@ class TaskWidget extends StatelessWidget {
                     ),
                     Row(
                       children: [
-                        Icon(Icons.access_time),
+                        //  Icon(Icons.access_time),
                         Text(
-                          '10:30 am',
+                          task.description ?? "",
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],

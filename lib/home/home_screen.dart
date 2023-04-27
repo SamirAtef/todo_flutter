@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:todo/home/add_task_bottom_sheet.dart';
 import 'package:todo/home/settings/settings_tab.dart';
 import 'package:todo/home/tasks_list/tasks_list_tab.dart';
 
@@ -50,7 +51,9 @@ class _HomeScreenState extends State<HomeScreen> {
         shape: StadiumBorder(
           side: BorderSide(color: Colors.white, width: 4),
         ),
-        onPressed: () {},
+        onPressed: () {
+          showAddTaskBottomSheet();
+        },
         child: Icon(Icons.add),
       ),
       body: tabs[selectedIndex],
@@ -58,4 +61,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   var tabs = [TasksListTab(), SettingsTab()];
+
+  void showAddTaskBottomSheet() {
+    showModalBottomSheet(
+        context: context,
+        builder: (buildContext) {
+          return AddTaskBottomSheet();
+        },
+        isScrollControlled: true);
+  }
 }

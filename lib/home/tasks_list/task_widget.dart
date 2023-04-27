@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:todo/database/my_database.dart';
+import 'package:todo/database/task.dart';
+import 'package:todo/dialogeUtils.dart';
 import 'package:todo/my_theme_data.dart';
 
 class TaskWidget extends StatelessWidget {
+  Task task;
+
+  TaskWidget(this.task);
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -12,7 +19,21 @@ class TaskWidget extends StatelessWidget {
           motion: DrawerMotion(),
           children: [
             SlidableAction(
-              onPressed: (_) {},
+              onPressed: (_) {
+                MyDatabase.deleteTask(task).then((value) {
+                  showMessage(context, 'Task deleted successfully',
+                      posActionName: 'ok');
+                }).onError((error, stackTrace) {
+                  showMessage(
+                      context,
+                      'something went wrong,'
+                      'please try again later',
+                      posActionName: 'ok');
+                }).timeout(Duration(seconds: 5), onTimeout: () {
+                  showMessage(context, 'Data deleted locally ',
+                      posActionName: 'ok');
+                });
+              },
               icon: Icons.delete,
               backgroundColor: MyTheme.red,
               label: 'Delete',
@@ -34,7 +55,9 @@ class TaskWidget extends StatelessWidget {
                 height: 80,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
-                  color: Theme.of(context).primaryColor,
+                  color: task.isDone!
+                      ? Colors.green
+                      : Theme.of(context).primaryColor,
                 ),
               ),
               SizedBox(
@@ -46,17 +69,22 @@ class TaskWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'this is title',
-                      style: Theme.of(context).textTheme.titleMedium,
+                      task.title ?? "",
+                      style: task.isDone!
+                          ? Theme.of(context)
+                              .textTheme
+                              .titleMedium!
+                              .copyWith(color: Colors.green)
+                          : Theme.of(context).textTheme.titleMedium,
                     ),
                     SizedBox(
                       width: 8,
                     ),
                     Row(
                       children: [
-                        Icon(Icons.access_time),
+                        //  Icon(Icons.access_time),
                         Text(
-                          '10:30 am',
+                          task.description ?? "",
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],
@@ -67,21 +95,43 @@ class TaskWidget extends StatelessWidget {
               SizedBox(
                 width: 8,
               ),
-              Container(
-                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 24),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: Theme.of(context).primaryColor,
-                ),
-                child: Icon(
-                  Icons.check,
-                  color: Colors.white,
-                ),
+              InkWell(
+                onTap: () {
+                  editIsDone();
+                },
+                child: task.isDone!
+                    ? Text(
+                        'Done!',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 22,
+                          color: Colors.green,
+                        ),
+                      )
+                    : Container(
+                        padding:
+                            EdgeInsets.symmetric(vertical: 8, horizontal: 24),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: Theme.of(context).primaryColor,
+                        ),
+                        child: Icon(
+                          Icons.check,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void editIsDone() {
+    var tasksRef = MyDatabase.getTasksCollection();
+    tasksRef.doc(task.id).update({
+      'isDone': !task.isDone!,
+    });
   }
 }

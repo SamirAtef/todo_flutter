@@ -125,7 +125,11 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
       }).onError((error, stackTrace) {
         showMessage(context, 'Something went wrong, Try again later');
       }).timeout(Duration(seconds: 5), onTimeout: () {
-        showMessage(context, 'Task saved locally');
+        hideLoading(context);
+        showMessage(context, 'Task saved locally', posActionName: 'OK',
+            posAction: () {
+          Navigator.pop(context);
+        });
       });
     }
   }

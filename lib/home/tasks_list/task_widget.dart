@@ -55,7 +55,9 @@ class TaskWidget extends StatelessWidget {
                 height: 80,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
-                  color: Theme.of(context).primaryColor,
+                  color: task.isDone!
+                      ? Colors.green
+                      : Theme.of(context).primaryColor,
                 ),
               ),
               SizedBox(
@@ -68,7 +70,12 @@ class TaskWidget extends StatelessWidget {
                   children: [
                     Text(
                       task.title ?? "",
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: task.isDone!
+                          ? Theme.of(context)
+                              .textTheme
+                              .titleMedium!
+                              .copyWith(color: Colors.green)
+                          : Theme.of(context).textTheme.titleMedium,
                     ),
                     SizedBox(
                       width: 8,
@@ -88,21 +95,43 @@ class TaskWidget extends StatelessWidget {
               SizedBox(
                 width: 8,
               ),
-              Container(
-                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 24),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: Theme.of(context).primaryColor,
-                ),
-                child: Icon(
-                  Icons.check,
-                  color: Colors.white,
-                ),
+              InkWell(
+                onTap: () {
+                  editIsDone();
+                },
+                child: task.isDone!
+                    ? Text(
+                        'Done!',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 22,
+                          color: Colors.green,
+                        ),
+                      )
+                    : Container(
+                        padding:
+                            EdgeInsets.symmetric(vertical: 8, horizontal: 24),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: Theme.of(context).primaryColor,
+                        ),
+                        child: Icon(
+                          Icons.check,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void editIsDone() {
+    var tasksRef = MyDatabase.getTasksCollection();
+    tasksRef.doc(task.id).update({
+      'isDone': !task.isDone!,
+    });
   }
 }

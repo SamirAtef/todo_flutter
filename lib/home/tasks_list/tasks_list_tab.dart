@@ -1,9 +1,11 @@
 import 'package:calendar_timeline/calendar_timeline.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:todo/database/my_database.dart';
 import 'package:todo/database/task.dart';
 import 'package:todo/home/tasks_list/task_widget.dart';
+import 'package:todo/providers/tasks_provider.dart';
 
 class TasksListTab extends StatefulWidget {
   @override
@@ -12,9 +14,19 @@ class TasksListTab extends StatefulWidget {
 
 class _TasksListTabState extends State<TasksListTab> {
   DateTime selectedDate = DateTime.now();
+  late TasksProvider provider;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      provider.refreshTasks(selectedDate);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    TasksProvider provider = Provider.of<TasksProvider>(context);
     return Container(
       child: Column(
         children: [
@@ -28,6 +40,8 @@ class _TasksListTabState extends State<TasksListTab> {
 
               setState(() {
                 selectedDate = date;
+                // if i delete the next line it will show the same task in all days
+                provider.refreshTasks(selectedDate);
               });
             },
             leftMargin: 20,
@@ -41,10 +55,11 @@ class _TasksListTabState extends State<TasksListTab> {
           ),
           Expanded(
             child: StreamBuilder<QuerySnapshot<Task>>(
-              //  future: MyDatabase.getAllTasks(),
+              // future: MyDatabase.getAllTasks(),
               stream: MyDatabase.listenForTasksRealTimeUpdates(selectedDate),
               builder: (buildContext, snapshot) {
                 if (snapshot.hasError) {
+                  // add try again button
                   return Column(
                     children: [
                       Text('Error loading data ,'
@@ -57,11 +72,10 @@ class _TasksListTabState extends State<TasksListTab> {
                     child: CircularProgressIndicator(),
                   );
                 }
-
                 var data = snapshot.data?.docs.map((e) => e.data()).toList();
                 return ListView.builder(
                   itemBuilder: (buildContext, index) {
-                    return TaskWidget(data[index]);
+                    return TaskWidget(data![index]);
                   },
                   itemCount: data!.length,
                 );

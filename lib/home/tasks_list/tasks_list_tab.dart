@@ -75,7 +75,7 @@ class _TasksListTabState extends State<TasksListTab> {
                 var data = snapshot.data?.docs.map((e) => e.data()).toList();
                 return ListView.builder(
                   itemBuilder: (buildContext, index) {
-                    return TaskWidget(data![index]);
+                    return TaskWidget(data[index]);
                   },
                   itemCount: data!.length,
                 );
